@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Grafik Integral Numerik</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background: #EAEFF7;
+  padding: 36px 20px 60px;
+}
+
+.page-title {
+  text-align: center;
+  font-size: 17px;
+  font-weight: 700;
+  color: #0D2A56;
+  margin-bottom: 4px;
+  letter-spacing: 0.3px;
+}
+.page-func {
+  text-align: center;
+  font-family: monospace;
+  font-size: 13px;
+  color: #4B5563;
+  margin-bottom: 36px;
+}
+
+.box {
+  background: #ffffff;
+  border: 1px solid #C9D5E8;
+  border-radius: 10px;
+  padding: 22px 26px 24px;
+  max-width: 800px;
+  margin: 0 auto 28px;
+}
+
+.box-tag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #ffffff;
+  background: #0D2A56;
+  display: inline-block;
+  padding: 3px 10px;
+  border-radius: 4px;
+  margin-bottom: 8px;
+}
+.box-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: #0D2A56;
+  margin-bottom: 3px;
+}
+.box-sub {
+  font-size: 12.5px;
+  color: #6B7280;
+  margin-bottom: 14px;
+  font-family: monospace;
+}
+
+.legend {
+  display: flex;
+  gap: 18px;
+  flex-wrap: wrap;
+  font-size: 12px;
+  color: #6B7280;
+  margin-bottom: 12px;
+}
+.legend span { display: flex; align-items: center; gap: 6px; }
+
+.wrap { position: relative; height: 340px; }
+</style>
+</head>
+<body>
+
+<div class="page-title">Integral Numerik — Trapezoid Rule</div>
+<div class="page-func">f(x) = 0.2 + 25x − 200x² + 675x³ − 900x⁴ + 400x⁵ &nbsp;|&nbsp; x = 0 s/d 0.8</div>
+
+<!-- GRAFIK 1 -->
+<div class="box">
+  <div class="box-tag">Soal 1</div>
+  <div class="box-title">Grafik f(x)</div>
+  <div class="box-sub">9 titik sampel &nbsp;|&nbsp; step = 0.1</div>
+  <div class="legend">
+    <span><span style="width:22px;height:3px;background:#C0392B;border-radius:2px;display:inline-block"></span>Kurva f(x)</span>
+    <span><span style="width:9px;height:9px;background:#1A5FA8;border-radius:50%;display:inline-block"></span>Titik sampel</span>
+  </div>
+  <div class="wrap"><canvas id="c1"></canvas></div>
+</div>
+
+<!-- GRAFIK 2 -->
+<div class="box">
+  <div class="box-tag">Soal 2a</div>
+  <div class="box-title">Trapezoid Rule &mdash; n = 7</div>
+  <div class="box-sub">h = 0.8 / 7 = 0.1142857142857142857... &nbsp;|&nbsp; 7 trapezoid, 8 titik evaluasi</div>
+  <div class="legend">
+    <span><span style="width:22px;height:3px;background:#C0392B;border-radius:2px;display:inline-block"></span>Kurva f(x)</span>
+    <span><span style="width:14px;height:14px;background:rgba(26,95,168,0.17);border:1.5px solid rgba(26,95,168,0.5);border-radius:3px;display:inline-block"></span>Area trapezoid</span>
+    <span><span style="width:9px;height:9px;background:#1D9E75;border-radius:50%;display:inline-block"></span>Titik evaluasi</span>
+  </div>
+  <div class="wrap"><canvas id="c2"></canvas></div>
+</div>
+
+<!-- GRAFIK 3 -->
+<div class="box">
+  <div class="box-tag">Soal 2b</div>
+  <div class="box-title">Trapezoid Rule &mdash; n = 4</div>
+  <div class="box-sub">h = 0.8 / 4 = 0.2 &nbsp;|&nbsp; 4 trapezoid, 5 titik evaluasi</div>
+  <div class="legend">
+    <span><span style="width:22px;height:3px;background:#C0392B;border-radius:2px;display:inline-block"></span>Kurva f(x)</span>
+    <span><span style="width:14px;height:14px;background:rgba(211,84,0,0.14);border:1.5px solid rgba(211,84,0,0.5);border-radius:3px;display:inline-block"></span>Area trapezoid</span>
+    <span><span style="width:9px;height:9px;background:#D35400;border-radius:50%;display:inline-block"></span>Titik evaluasi</span>
+  </div>
+  <div class="wrap"><canvas id="c3"></canvas></div>
+</div>
+
+<script>
+function f(x) {
+  return 0.2 + 25*x - 200*x*x + 675*x*x*x - 900*x*x*x*x + 400*x*x*x*x*x;
+}
+
+const curve = [];
+for (let i = 0; i <= 400; i++) { const x = i*0.8/400; curve.push({x, y:f(x)}); }
+const zero = [{x:0,y:0},{x:0.8,y:0}];
+
+const opts = {
+  responsive:true, maintainAspectRatio:false,
+  plugins:{
+    legend:{display:false},
+    tooltip:{
+      backgroundColor:'#0D2A56',
+      bodyFont:{family:'monospace',size:12},
+      callbacks:{ label: c=>`x = ${c.parsed.x}   f(x) = ${c.parsed.y}` }
+    }
+  },
+  scales:{
+    x:{
+      type:'linear', min:-0.01, max:0.84,
+      title:{display:true, text:'x', font:{size:12,weight:'600'}, color:'#374151'},
+      ticks:{stepSize:0.1, callback:v=>v.toFixed(1), font:{size:11}, color:'#6B7280'},
+      grid:{color:'rgba(0,0,0,0.05)'}, border:{color:'#CBD5E1'}
+    },
+    y:{
+      title:{display:true, text:'f(x)', font:{size:12,weight:'600'}, color:'#374151'},
+      ticks:{font:{size:11}, color:'#6B7280'},
+      grid:{color:'rgba(0,0,0,0.05)'}, border:{color:'#CBD5E1'}
+    }
+  }
+};
+
+// Grafik 1
+const p1 = [{x:0,y:0.2},{x:0.1,y:1.289},{x:0.2,y:1.288},{x:0.3,y:1.607},
+            {x:0.4,y:2.456},{x:0.5,y:3.325},{x:0.6,y:3.464},{x:0.7,y:2.363},{x:0.8,y:0.232}];
+new Chart(document.getElementById('c1'),{type:'scatter',data:{datasets:[
+  {type:'line',    data:curve, borderColor:'#C0392B',borderWidth:2.5,pointRadius:0,fill:false,tension:0.3,order:2},
+  {type:'scatter', data:p1,   backgroundColor:'#1A5FA8',pointRadius:6,pointHoverRadius:9,order:0},
+  {type:'line',    data:zero, borderColor:'#94A3B8',borderWidth:1.2,borderDash:[5,4],pointRadius:0,fill:false,order:3}
+]},options:opts});
+
+// Grafik 2
+const p7 = [
+  {x:0,               y:0.2},
+  {x:0.1142857142857, y:1.3067407627774},
+  {x:0.2285714285714, y:1.3189280656869},
+  {x:0.3428571428571, y:1.9245442970191},
+  {x:0.4571428571429, y:2.9983844826560},
+  {x:0.5714285714286, y:3.5378949247337},
+  {x:0.6857142857143, y:2.5990118403047},
+  {x:0.8,             y:0.232}
+];
+const t7=[];
+for(let i=0;i<7;i++){t7.push({x:p7[i].x,y:0},{x:p7[i].x,y:p7[i].y},{x:p7[i+1].x,y:p7[i+1].y},{x:p7[i+1].x,y:0});}
+new Chart(document.getElementById('c2'),{type:'scatter',data:{datasets:[
+  {type:'line',    data:t7,   fill:true,backgroundColor:'rgba(26,95,168,0.15)',borderColor:'rgba(26,95,168,0.45)',borderWidth:1,pointRadius:0,tension:0,order:3},
+  {type:'line',    data:curve,borderColor:'#C0392B',borderWidth:2.5,pointRadius:0,fill:false,tension:0.3,order:1},
+  {type:'scatter', data:p7,  backgroundColor:'#1D9E75',pointRadius:6,pointHoverRadius:9,order:0},
+  {type:'line',    data:zero, borderColor:'#94A3B8',borderWidth:1.2,borderDash:[5,4],pointRadius:0,fill:false,order:4}
+]},options:opts});
+
+// Grafik 3
+const p4 = [{x:0,y:0.2},{x:0.2,y:1.288},{x:0.4,y:2.456},{x:0.6,y:3.464},{x:0.8,y:0.232}];
+const t4=[];
+for(let i=0;i<4;i++){t4.push({x:p4[i].x,y:0},{x:p4[i].x,y:p4[i].y},{x:p4[i+1].x,y:p4[i+1].y},{x:p4[i+1].x,y:0});}
+new Chart(document.getElementById('c3'),{type:'scatter',data:{datasets:[
+  {type:'line',    data:t4,   fill:true,backgroundColor:'rgba(211,84,0,0.13)',borderColor:'rgba(211,84,0,0.45)',borderWidth:1,pointRadius:0,tension:0,order:3},
+  {type:'line',    data:curve,borderColor:'#C0392B',borderWidth:2.5,pointRadius:0,fill:false,tension:0.3,order:1},
+  {type:'scatter', data:p4,  backgroundColor:'#D35400',pointRadius:7,pointHoverRadius:10,order:0},
+  {type:'line',    data:zero, borderColor:'#94A3B8',borderWidth:1.2,borderDash:[5,4],pointRadius:0,fill:false,order:4}
+]},options:opts});
+</script>
+</body>
+</html>
